@@ -1,0 +1,48 @@
+name: Dosu Apply Docs
+
+on:
+  repository_dispatch:
+    types: [dosu_apply_docs]
+
+jobs:
+  apply-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.client_payload.ref || github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Apply documentation updates
+        run: |
+          # ============================================
+          # 🚧 DEMO PLACEHOLDER
+          # ============================================
+          # In production, this section would be:
+          #
+          # Option 1 - Dosu CLI:
+          #   npx dosu-cli apply-patch \
+          #     --patch-id "${{ github.event.client_payload.patch_id }}" \
+          #     --api-key "${{ secrets.DOSU_API_KEY }}"
+          #
+          # Option 2 - Fetch from Dosu API:
+          #   curl -s "${{ github.event.client_payload.patch_url }}" | git apply
+          #
+          # For this demo, we simply modify README.md
+          # ============================================
+          
+          echo "" >> README.md
+          echo "---" >> README.md
+          echo "## 📄 Documentation Sync" >> README.md
+          echo "- **Synced at:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> README.md
+          echo "- **Triggered by:** PR #${{ github.event.client_payload.pr_number || 'manual' }}" >> README.md
+          echo "- **Patch ID:** ${{ github.event.client_payload.patch_id || 'demo' }}" >> README.md
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "dosu-bot"
+          git config user.email "bot@dosu.dev"
+          git add .
+          git diff --staged --quiet || git commit -m "docs: sync documentation via Dosu"
+          git push
