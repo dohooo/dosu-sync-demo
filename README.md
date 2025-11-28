@@ -1,6 +1,6 @@
 # dosu-sync-demo
 
-Demo project for Dosu sync functionality.
+Demo project for Dosu sync functionality. 
 
 ---
 ## Documentation Sync
