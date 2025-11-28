@@ -1,0 +1,52 @@
+name: Dosu Apply Docs
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR number
+        required: true
+        type: string
+      items:
+        description: Items to apply
+        required: true
+        type: string
+      total_items:
+        description: Total items
+        required: true
+        type: string
+      comment_id:
+        description: Comment ID
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  apply-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply docs
+        run: |
+          echo "" >> README.md
+          echo "--" >> README.md
+          echo "Sync PR#${{ inputs.pr_number }} Items:${{ inputs.items }}" >> README.md
+      - name: Commit
+        run: |
+          git config user.name dosu-bot
+          git config user.email bot@dosu.dev
+          git add .
+          git diff --staged --quiet || git commit -m "docs: sync"
+          git push
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const id=${{ inputs.comment_id }},items='${{ inputs.items }}'.split(',').map(Number),total=Number('${{ inputs.total_items }}');
+            const{data:c}=await github.rest.issues.getComment({owner:context.repo.owner,repo:context.repo.repo,comment_id:id});
+            let b=c.body.replace(/\n---\n\*\*Status:?\*\*[\s\S]*$/m,'');
+            b=b.replace(/\n---\n\n\*\*Commands:\*\*[\s\S]*?(<sub>|$)/m,'$1');
+            for(let i=1;i<=total;i++)b=b.replace(new RegExp(`- \\[[ x]\\] \\*\\*${i}\\.\\*\\*`,'i'),items.includes(i)?`- ✅ **${i}.**`:`- 🗑️ **${i}.**`);
+            await github.rest.issues.updateComment({owner:context.repo.owner,repo:context.repo.repo,comment_id:id,body:b+'\n---\n✅ **Resolved** — All selected documentation updates have been successfully applied and committed to this branch.'});
