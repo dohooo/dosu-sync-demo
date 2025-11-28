@@ -33,7 +33,8 @@ jobs:
 
       - name: Apply documentation updates
         run: |
-          echo "Applying items: ${{ inputs.items }} for PR #${{ inputs.pr_number }}"
+          echo "Applying items: ${{ inputs.items }} for PR #${{ 
+inputs.pr_number }}"
           echo "" >> README.md
           echo "---" >> README.md
           echo "## Documentation Sync" >> README.md
@@ -46,7 +47,8 @@ jobs:
           git config user.name "dosu-bot"
           git config user.email "bot@dosu.dev"
           git add .
-          git diff --staged --quiet || git commit -m "docs: sync via Dosu (PR #${{ inputs.pr_number }})"
+          git diff --staged --quiet || git commit -m "docs: sync via Dosu
+  (PR #${{ inputs.pr_number }})"
           git push
 
       - name: Update PR comment
@@ -54,28 +56,33 @@ jobs:
         with:
           script: |
             const commentId = ${{ inputs.comment_id }};
-            const items = '${{ inputs.items }}'.split(',').map(n => parseInt(n));
+            const items = '${{ inputs.items }}'.split(',').map(n => 
+parseInt(n));
             const total = parseInt('${{ inputs.total_items }}');
-            
-            const { data: comment } = await github.rest.issues.getComment({
+
+            const { data: comment } = await
+github.rest.issues.getComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               comment_id: commentId
             });
-            
+
             let body = comment.body;
             body = body.replace(/\n---\n\*\*Status:?\*\*[\s\S]*$/m, '');
-            
+
             for (let i = 1; i <= total; i++) {
               if (items.includes(i)) {
-                body = body.replace(new RegExp(`- \\[[ x]\\] \\*\\*#${i}\\*\\*`, 'i'), `- :white_check_mark: **#${i}**`);
+                body = body.replace(new RegExp(`- \\[[ x]\\]
+\\*\\*#${i}\\*\\*`, 'i'), `- :white_check_mark: **#${i}**`);
               } else {
-                body = body.replace(new RegExp(`- \\[[ x]\\] \\*\\*#${i}\\*\\*`, 'i'), `- :wastebasket: **#${i}**`);
+                body = body.replace(new RegExp(`- \\[[ x]\\]
+\\*\\*#${i}\\*\\*`, 'i'), `- :wastebasket: **#${i}**`);
               }
             }
-            
-            body += `\n---\n**Resolved** - Documentation sync completed.\n`;
-            
+
+            body += `\n---\n**Resolved** - Documentation sync
+completed.\n`;
+
             await github.rest.issues.updateComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
